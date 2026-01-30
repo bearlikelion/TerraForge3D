@@ -607,9 +607,7 @@ void NodeEditor::DeleteNode(NodeEditorNode *node)
 NodeEditor::~NodeEditor()
 {
 	ImGuiNodeEditor::DestroyEditor(context);
-}
-
-void NodeEditor::Reset()
+}void NodeEditor::Reset()
 {
 	// Clear Up Node Editor
 	int size = 0;

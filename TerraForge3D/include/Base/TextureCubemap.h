@@ -3,6 +3,7 @@
 #include <vector>
 #include "Base/BaseMath.h"
 #include "Base/Texture2D.h"
+#include <cstdint>
 
 #define TEXTURE_CUBEMAP_PX 0
 #define TEXTURE_CUBEMAP_NX 1

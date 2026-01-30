@@ -48,19 +48,42 @@ bool GeneratorData::CopyTo(const GeneratorData* other)
 	glBindBuffer(GL_COPY_WRITE_BUFFER, other->m_RendererID);
 	glBufferData(GL_COPY_WRITE_BUFFER, m_Size, nullptr, GL_DYNAMIC_DRAW);
 	glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, m_Size);
+	return true;
 }
 
 float* GeneratorData::GetCPUCopy()
 {
+	if (m_Size == 0) return nullptr;
 	float* data = new float[m_Size / sizeof(float)];
+	memset(data, 0, m_Size);
 	this->GetData(data, 0, m_Size);
 	return data;
 }
 
 void GeneratorData::GetData(void* data, size_t offset, size_t size)
 {
+	if (data == nullptr || size == 0) return;
+	if (offset + size > m_Size)
+	{
+		std::cerr << "ERROR: GeneratorData::GetData range exceeds buffer size. "
+			<< "offset=" << offset
+			<< " size=" << size
+			<< " buffer=" << m_Size
+			<< std::endl;
+		return;
+	}
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_RendererID);
 	float* ptr = (float*)glMapBufferRange(GL_SHADER_STORAGE_BUFFER, offset, size, GL_MAP_READ_BIT);
+	if (ptr == nullptr)
+	{
+		std::cerr << "ERROR: GeneratorData::GetData failed to map buffer. "
+			<< "offset=" << offset
+			<< " size=" << size
+			<< " buffer=" << m_Size
+			<< std::endl;
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+		return;
+	}
 	memcpy(data, ptr, size);
 	glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);

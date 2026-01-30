@@ -93,6 +93,17 @@ if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.12.25835)
     set(CMAKE_CXX20_EXTENSION_COMPILE_OPTION "-std:c++latest")
 endif()
 
+set(DATA_SOURCE_DIR "${CMAKE_SOURCE_DIR}/Binaries/Data")
+set(DATA_TARGET_DIR "${CMAKE_BINARY_DIR}/Data")
+file(MAKE_DIRECTORY "${DATA_TARGET_DIR}")
+foreach(subdir configs fonts licenses logos models shaders styles textures)
+    if(EXISTS "${DATA_SOURCE_DIR}/${subdir}" AND NOT EXISTS "${DATA_TARGET_DIR}/${subdir}")
+        execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
+            "${DATA_SOURCE_DIR}/${subdir}"
+            "${DATA_TARGET_DIR}/${subdir}")
+    endif()
+endforeach()
+
 if( MSVC )
     if(${CMAKE_VERSION} VERSION_LESS "3.6.0") 
         message( "\n\t[ WARNING ]\n\n\tCMake version lower than 3.6.\n\n\t - Please update CMake and rerun; OR\n\t - Manually set 'GLFW-CMake-starter' as StartUp Project in Visual Studio.\n" )

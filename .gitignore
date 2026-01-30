@@ -35,3 +35,8 @@ build
 Release
 Debug
 [*].dir
+/Binaries/Data/cache
+/Binaries/Data/logs
+/Binaries/Data/textures
+/Binaries/Data/configs
+/.idea

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Base/Application.h"
+#include "Base/UIFontManager.h"
 
 #include <imgui/imgui.h>
 #include <imgui/backends/imgui_impl_glfw.h>
@@ -9,6 +10,7 @@
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <cstdlib>
 #include <iostream>
 #include <string>
 
@@ -42,6 +44,23 @@ static void InitImGui(std::string &configPath)
 	io.ConfigViewportsNoAutoMerge = true;
 	ImGui::StyleColorsDark();
 	ImGuiStyle &style = ImGui::GetStyle();
+
+	float uiScale = 1.0f;
+	if (const char* envScale = std::getenv("TF3D_UI_SCALE"))
+	{
+		uiScale = std::strtof(envScale, nullptr);
+	}
+	else
+	{
+		GLFWwindow* window = static_cast<GLFWwindow*>(Application::Get()->GetWindow()->GetNativeWindow());
+		float xscale = 1.0f;
+		float yscale = 1.0f;
+		glfwGetWindowContentScale(window, &xscale, &yscale);
+		uiScale = (xscale > yscale) ? xscale : yscale;
+	}
+	if (uiScale < 1.0f) uiScale = 1.0f;
+	style.ScaleAllSizes(uiScale);
+	SetUIFontScale(uiScale);
 
 	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 	{
@@ -90,12 +109,12 @@ void Application::SetTitle(std::string title)
 void Application::Init()
 {
 	m_Window = new Window(m_WindowTitle);
-	m_Window->SetVSync(true);
-	m_Window->SetVisible(false);
+	m_Window->SetVSync(false);
 	isActive = true;
 	s_App = this;
 	InitGlad();
 	InitImGui(windowConfigPath);
+	m_Window->SetVisible(true);
 }
 
 void Application::Render()
@@ -142,7 +161,7 @@ void Application::RenderImGui()
 
 void Application::Run(std::string loadFile)
 {
-	m_Window->SetVisible(true);
+
 	float oneSecCounter = 0;
 
 	while (isActive)
@@ -151,7 +170,9 @@ void Application::Run(std::string loadFile)
 		float deltaTime = currentTime - previousTime;
 		previousTime = currentTime;
 		oneSecCounter += deltaTime;
+		Log("DEBUG_RUN: Before OnUpdate()");
 		OnUpdate(deltaTime);
+		Log("DEBUG_RUN: After OnUpdate()");
 
 		if (oneSecCounter >= 1)
 		{
@@ -159,8 +180,12 @@ void Application::Run(std::string loadFile)
 			oneSecCounter = 0;
 		}
 
+		Log("DEBUG_RUN: Before Render()");
 		Render();
+		Log("DEBUG_RUN: After Render()");
+		Log("DEBUG_RUN: Before m_Window->Update()");
 		m_Window->Update();
+		Log("DEBUG_RUN: After m_Window->Update()");
 	}
 
 	OnEnd();
